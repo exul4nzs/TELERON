@@ -63,31 +63,28 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ---- Insert an Image at the Top ----
-st.image(
-    "/home/eb204-u16/Pictures/asdasd.png",  # Replace with the actual file path or URL
-    caption="Welcome to Bartley's Biography",
-    use_column_width=True
-)
-
 # ---- Header Section ----
 st.markdown('<div class="title">Bartley\'s Biography</div>', unsafe_allow_html=True)
 
 # ---- Initialize Session State ----
 if 'bio_data' not in st.session_state:
     st.session_state['bio_data'] = {
-        'name': "Bartley Josh D.Teleron",
+        'name': "Bartley Josh D. Teleron",
         'age': "19",
         'gender': "Male",
         'mother': "Betsy D.Teleron",
         'mother_bday': datetime.date(1967, 2, 26),
         'father': "Joey Adelfo L. Teleron",
-        'father_bday': datetime.date(1960, 10, 23),
         'guardian': "Jerry I. Teleron",
-        'high_school': "Crossing Bayabas National High School",
-        'senior_high_school': "Crossing Bayabas National High School",
-        'college': "Surigao del Norte State University",
-        'profile_picture': None,
+        'educational_attainment': [
+            {"Level": "High School", "School": "Crossing Bayabas National High School"},
+            {"Level": "Senior High School", "School": "Crossing Bayabas National High School"},
+            {"Level": "College", "School": "Surigao del Norte State University"}
+        ],
+        'social_media': [
+            {"Platform": "Facebook", "Link": "https://www.facebook.com/bartleyjosh.teleron.5"},
+            {"Platform": "Upwork", "Link": "https://www.upwork.com/freelancers/~019a045a83472c8a1d"}
+        ],
         'achievements': [
             {"Year": "2020", "Achievement": "Graduated with honors from high school"},
             {"Year": "2022", "Achievement": "Top 10 in senior high school class"},
@@ -98,62 +95,49 @@ if 'bio_data' not in st.session_state:
 # ---- Editable Form ----
 with st.form("edit_bio_form"):
     st.markdown('<div class="subheader">Personal Information</div>', unsafe_allow_html=True)
-    with st.container():
-        st.session_state['bio_data']['name'] = st.text_input("Full Name", st.session_state['bio_data']['name'])
-        st.session_state['bio_data']['age'] = st.selectbox("Age", [str(i) for i in range(18, 101)], index=int(st.session_state['bio_data']['age']) - 18)
-        st.session_state['bio_data']['gender'] = st.radio("Gender", ["Male", "Female"], index=["Male", "Female"].index(st.session_state['bio_data']['gender']))
+    st.session_state['bio_data']['name'] = st.text_input("Full Name", st.session_state['bio_data']['name'])
+    st.session_state['bio_data']['age'] = st.selectbox("Age", [str(i) for i in range(18, 101)], index=int(st.session_state['bio_data']['age']) - 18)
+    st.session_state['bio_data']['gender'] = st.radio("Gender", ["Male", "Female"], index=["Male", "Female"].index(st.session_state['bio_data']['gender']))
 
     st.markdown('<div class="subheader">Family Background</div>', unsafe_allow_html=True)
-    with st.container():
-        st.session_state['bio_data']['mother'] = st.text_input("Mother's Name", st.session_state['bio_data']['mother'])
-        st.session_state['bio_data']['mother_bday'] = st.date_input("Mother's Birthday", st.session_state['bio_data']['mother_bday'])
-        st.session_state['bio_data']['father'] = st.text_input("Father's Name", st.session_state['bio_data']['father'])
-        st.session_state['bio_data']['guardian'] = st.text_input("Guardian's Name", st.session_state['bio_data']['guardian'])
+    st.session_state['bio_data']['mother'] = st.text_input("Mother's Name", st.session_state['bio_data']['mother'])
+    st.session_state['bio_data']['mother_bday'] = st.date_input("Mother's Birthday", st.session_state['bio_data']['mother_bday'])
+    st.session_state['bio_data']['father'] = st.text_input("Father's Name", st.session_state['bio_data']['father'])
+    st.session_state['bio_data']['guardian'] = st.text_input("Guardian's Name", st.session_state['bio_data']['guardian'])
 
+    # Educational Attainment Section
     st.markdown('<div class="subheader">Educational Attainment</div>', unsafe_allow_html=True)
-    with st.container():
-        st.session_state['bio_data']['high_school'] = st.text_input("High School", st.session_state['bio_data']['high_school'])
-        st.session_state['bio_data']['senior_high_school'] = st.text_input("Senior High School", st.session_state['bio_data']['senior_high_school'])
-        st.session_state['bio_data']['college'] = st.text_input("College", st.session_state['bio_data']['college'])
+    educational_attainment = st.session_state['bio_data']['educational_attainment']
+    for i, record in enumerate(educational_attainment):
+        cols = st.columns([2, 3, 1])
+        record['Level'] = cols[0].text_input(f"Level {i + 1}", record['Level'])
+        record['School'] = cols[1].text_input(f"School {i + 1}", record['School'])
+        if cols[2].button(f"Remove {i + 1}"):
+            educational_attainment.pop(i)
 
-    st.markdown('<div class="subheader">Profile Picture</div>', unsafe_allow_html=True)
-    with st.container():
-        uploaded_image = st.file_uploader("Upload Your Photo", type=["jpg", "png", "jpeg"])
-        if uploaded_image:
-            st.session_state['bio_data']['profile_picture'] = uploaded_image
+    if st.button("Add Education"):
+        educational_attainment.append({"Level": "", "School": ""})
+
+    # Social Media Section
+    st.markdown('<div class="subheader">🌐 Social Media</div>', unsafe_allow_html=True)
+    social_media = st.session_state['bio_data']['social_media']
+    for i, sm in enumerate(social_media):
+        cols = st.columns([2, 5, 1])
+        sm['Platform'] = cols[0].text_input(f"Platform {i + 1}", sm['Platform'])
+        sm['Link'] = cols[1].text_input(f"Link {i + 1}", sm['Link'])
+        if cols[2].button(f"Remove {i + 1}"):
+            social_media.pop(i)
+
+    if st.button("Add Social Media"):
+        social_media.append({"Platform": "", "Link": ""})
 
     # Submit Button
     submitted = st.form_submit_button("Save Changes")
-
-# ---- Display Biography ----
-if submitted:
-    st.success("Biography updated successfully!")
-
-st.markdown('<hr>', unsafe_allow_html=True)
-st.markdown('<div class="subheader">📄 Your Biography</div>', unsafe_allow_html=True)
-with st.container():
-    st.write(f"**Name:** {st.session_state['bio_data']['name']}")
-    st.write(f"**Age:** {st.session_state['bio_data']['age']}")
-    st.write(f"**Gender:** {st.session_state['bio_data']['gender']}")
-    st.write(f"**Mother's Name:** {st.session_state['bio_data']['mother']} (Born: {st.session_state['bio_data']['mother_bday']})")
-    st.write(f"**Father's Name:** {st.session_state['bio_data']['father']}")
-    st.write(f"**Guardian's Name:** {st.session_state['bio_data']['guardian']}")
-    st.write(f"**High School:** {st.session_state['bio_data']['high_school']}")
-    st.write(f"**Senior High School:** {st.session_state['bio_data']['senior_high_school']}")
-    st.write(f"**College:** {st.session_state['bio_data']['college']}")
-
-    if st.session_state['bio_data']['profile_picture']:
-        st.image(st.session_state['bio_data']['profile_picture'], caption="Your Profile Picture", use_column_width=True)
 
 # ---- Display Achievements Table ----
 st.markdown('<div class="subheader">🏆 Achievements</div>', unsafe_allow_html=True)
 achievements = st.session_state['bio_data']['achievements']
 st.table(achievements)
 
-# ---- Display Social Media Tabs ----
-st.markdown('<hr>', unsafe_allow_html=True)
-st.markdown('<div class="subheader">🌐 Social Media</div>', unsafe_allow_html=True)
-with st.container():
-    st.markdown("[Facebook](https://facebook.com) | [LinkedIn](https://linkedin.com) | [Upwork](https://upwork.com)", unsafe_allow_html=True)
-
+# ---- Footer ----
 st.markdown('<footer>Created with 💻 using Streamlit</footer>', unsafe_allow_html=True)
